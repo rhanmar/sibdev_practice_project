@@ -8,7 +8,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
-        return Restaurant.objects.create(**validated_data)
+        return super().create(validated_data)
 
     class Meta:
         model = Restaurant
