@@ -3,6 +3,9 @@ from django.db import models
 from yandex_geocoder import Client
 
 from django.contrib.auth.models import User
+from .dishes import Dish
+
+from config.settings.secret import yandex_geocoder_api
 
 
 class Point(models.Model):
@@ -20,16 +23,18 @@ class Restaurant(models.Model):
     closing_time = models.TimeField(null=True)
     address = models.CharField(max_length=128, null=True)
 
-    average_cost = models.FloatField(null=True)
     point = models.ForeignKey(Point, on_delete=models.CASCADE, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
+    average_cost = models.FloatField(null=True)
+    dishes = models.ManyToManyField(Dish)
+
     def save(self, *args, **kwargs):
-        self.average_cost = 1001  # calc later
+        print('!!!')
         if self.address:
-            client = Client('eca8121e-a2ed-4826-9369-464e4ba79cab')
+            client = Client(yandex_geocoder_api)
             longitude, latitude = client.coordinates(self.address)
-            self.point = Point.objects.create(latitude=latitude, longitude=longitude)
+            self.point, created = Point.objects.get_or_create(latitude=latitude, longitude=longitude)
         super().save(*args, **kwargs)
 
     def __str__(self):
