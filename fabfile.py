@@ -22,7 +22,8 @@ def shell():
 
 
 def dev():
-    local("docker-compose run --rm --service-ports server")
+    local("docker-compose run --rm -e YANDEX_GEOCODER_API_KEY=$YANDEX_GEOCODER_API_KEY"
+          " --service-ports server")
 
 
 def kill():

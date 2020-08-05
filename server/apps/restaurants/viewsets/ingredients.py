@@ -12,5 +12,5 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    filter_backends = [DjangoFilterBackend]
-    filter_fields = '__all__'
+    filter_backends = (DjangoFilterBackend, )
+    filter_fields = ('name', 'food_energy')
