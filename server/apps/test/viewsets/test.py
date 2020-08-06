@@ -9,5 +9,8 @@ class TestViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
+    """
+    App for first tests
+    """
     serializer_class = TestSerializer
     queryset = Test.objects.all()
