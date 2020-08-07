@@ -5,6 +5,7 @@ from apps.restaurants.serializers import IngredientSerializer
 from apps.restaurants.models import Ingredient
 
 from url_filter.integrations.drf import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 class IngredientViewSet(mixins.RetrieveModelMixin,
@@ -12,5 +13,6 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    filter_backends = (DjangoFilterBackend, )
+    filter_backends = (DjangoFilterBackend,)
     filter_fields = ('name', 'food_energy')
+    permission_classes = [IsAuthenticatedOrReadOnly]
