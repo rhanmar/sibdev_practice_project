@@ -31,4 +31,4 @@ class DishViewSet(viewsets.ModelViewSet):
     queryset = Dish.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('name', 'photo', 'price', 'dish_calories', 'ingredients')
-    permission_classes = [DishPermission]
+    permission_classes = (DishPermission, )

@@ -22,4 +22,4 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
     queryset = Ingredient.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('name', 'food_energy')
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = (IsAuthenticatedOrReadOnly, )

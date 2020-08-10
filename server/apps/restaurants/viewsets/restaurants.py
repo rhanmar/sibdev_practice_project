@@ -32,4 +32,4 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filter_fields = ('name', 'photo', 'opening_time', 'closing_time', 'address', 'point', 'owner', 'average_cost', 'dishes')
-    permission_classes = [RestaurantPermission]
+    permission_classes = (RestaurantPermission, )

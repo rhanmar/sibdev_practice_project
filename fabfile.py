@@ -28,3 +28,7 @@ def dev():
 
 def kill():
     local("docker kill $(docker ps -q)")
+
+
+def test():
+    local("docker exec -it $(docker ps | grep server_ | awk '{{ print $1 }}') python manage.py test apps.restaurants")
