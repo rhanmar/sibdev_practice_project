@@ -16,17 +16,17 @@ class Point(models.Model):
 
 
 class Restaurant(models.Model):
-    name = models.CharField(max_length=64, help_text='Обязательное. Название заведения')
+    name = models.CharField(max_length=64, help_text='Название заведения')
     photo = models.ImageField(upload_to='uploads/', null=True, help_text='Фотография заведения')
     opening_time = models.TimeField(null=True, help_text='Время открытия заведения')
     closing_time = models.TimeField(null=True, help_text='Время закрытия заведения')
-    address = models.CharField(max_length=128, null=True, help_text='Обязательное. Адрес заведения')
+    address = models.CharField(max_length=128, null=True, help_text='Адрес заведения')
 
     point = models.ForeignKey(Point, on_delete=models.CASCADE, blank=True, null=True, help_text='Координаты заведения')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, help_text='Владелец заведения')
 
     average_cost = models.DecimalField(max_digits=7, decimal_places=2, null=True, help_text='Средняя цена в заведении')
-    dishes = models.ManyToManyField(Dish, help_text='Обязательное. Список блюд')
+    dishes = models.ManyToManyField(Dish, help_text='Список блюд')
 
     def save(self, *args, **kwargs):
         if self.address:
