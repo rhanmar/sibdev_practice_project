@@ -13,3 +13,6 @@ djangorestframework==3.11.0 # API
 django-url-filter==0.3.15 # улучшенные фильтры для DRF
 yandex-geocoder==2.0.0 # работа с координатами
 drf-yasg==1.17.1 # документирование кода
+django-cache-url==3.1.2
+django-redis==4.12.1
+redis-server==5.0.7

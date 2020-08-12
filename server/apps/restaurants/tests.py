@@ -38,9 +38,9 @@ class APITests(APITestCase):
         rest1.owner = User.objects.get(username='first_user')
         rest1.save()
 
-    def test_get_request(self):
+    def test_list_action(self):
         """
-        Test that GET works with unauthorized users
+        Test that `list` action works for unauthorized users
         """
         response = self.client.get(reverse('restaurants-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -49,6 +49,10 @@ class APITests(APITestCase):
         response = self.client.get(reverse('ingredients-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_retrieve_action(self):
+        """
+        Test that GET by id works for unauthorized users
+        """
         rest = Restaurant.objects.get(name='first_rest')
         dish = Dish.objects.get(name='first_dish')
         ingr = Ingredient.objects.get(name='first_ingredient')
@@ -59,10 +63,30 @@ class APITests(APITestCase):
         response = self.client.get(reverse('ingredients-detail', args=(ingr.id,)))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_auth_restaurants(self):
+    def test_patch_action(self):
         """
-        Test that only authorized users are allowed to send PUT, PATCH and DELETE requests
-        and that only owners are allowed to change and delete restaurants
+        Test that only authorized users are allowed to send PATCH requests
+        and that only owners are allowed to change restaurants
+        """
+        obj = Restaurant.objects.get(name='first_rest')
+        owner = obj.owner
+        another_user = User.objects.get(username='second_user')
+        header_owner = {'HTTP_AUTHORIZATION': f"Token {owner.auth_token}"}
+        header_another_user = {'HTTP_AUTHORIZATION': f"Token {another_user.auth_token}"}
+        url = reverse('restaurants-detail', args=(obj.id,))
+        patch_data = {'name': 'patch_new_name_for_restaurant'}
+
+        response = self.client.patch(url, patch_data)  # without token
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        response = self.client.patch(url, patch_data, **header_owner)  # with owner
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.patch(url, patch_data, **header_another_user)  # with another user
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_put_action(self):
+        """
+        Test that only authorized users are allowed to send PUT requests
+        and that only owners are allowed to change restaurants
         """
         obj = Restaurant.objects.get(name='first_rest')
         owner = obj.owner
@@ -75,69 +99,59 @@ class APITests(APITestCase):
         put_data = {'name': 'put_new_name_for_restaurant',
                     'address': 'Sochi',
                     'dishes': [dish.id]}
-        patch_data = {'name': 'patch_new_name_for_restaurant'}
 
-        # PATCH, PUT, DELETE without token
-        response = self.client.patch(url, patch_data)
+        response = self.client.put(url, put_data)  # without token
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        response = self.client.put(url, put_data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        # PATCH WITH OWNER
-        response = self.client.patch(url, patch_data, **header_owner)
+        response = self.client.put(url, put_data, **header_owner)  # with owner
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # PATCH WITH ANOTHER USER
-        response = self.client.patch(url, patch_data, **header_another_user)
+        response = self.client.put(url, put_data, **header_another_user)  # with another user
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        # PUT WITH OWNER
-        response = self.client.put(url, put_data, **header_owner)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_delete_action(self):
+        """
+        Test that only authorized users are allowed to send DELETE requests
+        and that only owners are allowed to delete restaurants
+        """
+        obj = Restaurant.objects.get(name='first_rest')
+        owner = obj.owner
+        another_user = User.objects.get(username='second_user')
+        header_owner = {'HTTP_AUTHORIZATION': f"Token {owner.auth_token}"}
+        header_another_user = {'HTTP_AUTHORIZATION': f"Token {another_user.auth_token}"}
+        url = reverse('restaurants-detail', args=(obj.id,))
 
-        # PUT_WITH_ANOTHER_USER
-        response = self.client.put(url, put_data, **header_another_user)
+        response = self.client.delete(url)  # without token
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        response = self.client.delete(url, **header_another_user)  # with another user
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        # DELETE WITH ANOTHER USER
-        response = self.client.delete(url, **header_another_user)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        # DELETE WITH OWNER
-        response = self.client.delete(url, **header_owner)
+        response = self.client.delete(url, **header_owner)  # with owner
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_token_return(self):
+    def test_token_return_after_creating(self):
         """
-        Test that POST request on /api/users and on /api/auth/token returns token
+        Test that POST request on /api/users returns token
         """
-        # Test /api/auth/token
-        data = {'username': 'first_user', 'password': '123'}
-        response = self.client.post(reverse('auth/token'), data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Test /api/users
         response = self.client.post(reverse('users-list'),
                                  {'username': 'test_user', 'password': '123'})
         self.assertEqual(response.data['token'],
                          User.objects.get(username='test_user').auth_token.key)
 
-    def test_creating_rest_and_dish(self):
+    def test_token_return(self):
         """
-        Test that only authorized users are allowed to create restaurants and dishes
-        and test that POST is not allowed for ingredients
+        Test that POST request on /api/auth/token returns token
+        """
+        data = {'username': 'first_user', 'password': '123'}
+        response = self.client.post(reverse('auth/token'), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_creating_restaurant(self):
+        """
+        Test that only authorized users are allowed to create restaurants
         """
         user = User.objects.get(username='second_user')
         dish = Dish.objects.get(name='first_dish')
-        ingredient = Ingredient.objects.get(name='third_ingredient')
 
         header = {'HTTP_AUTHORIZATION': f"Token {user.auth_token}"}
         rest_data = {'name': 'rest_name', 'address': 'Riga', 'dishes': [dish.id]}
-        dish_data = {'name': 'dish_name', 'price': 222, 'ingredients': [ingredient.id]}
-        ingr_data = {'name': 'ing_name', 'food_energy': 10}
-
-        # Test restaurants
         # Without token
         response = self.client.post(reverse('restaurants-list'), rest_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -145,7 +159,14 @@ class APITests(APITestCase):
         response = self.client.post(reverse('restaurants-list'), rest_data, **header)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Test dish
+    def test_creating_dish(self):
+        """
+        Test that only authorized users are allowed to create dishes
+        """
+        user = User.objects.get(username='second_user')
+        ingredient = Ingredient.objects.get(name='third_ingredient')
+        header = {'HTTP_AUTHORIZATION': f"Token {user.auth_token}"}
+        dish_data = {'name': 'dish_name', 'price': 222, 'ingredients': [ingredient.id]}
         # Without token
         response = self.client.post(reverse('dishes-list'), dish_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -153,10 +174,16 @@ class APITests(APITestCase):
         response = self.client.post(reverse('dishes-list'), dish_data, **header)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Test ingredients
+    def test_creating_ingredient(self):
+        """
+        Test that POST is not allowed for ingredients
+        """
+        user = User.objects.get(username='second_user')
+        header = {'HTTP_AUTHORIZATION': f"Token {user.auth_token}"}
+        ingr_data = {'name': 'ing_name', 'food_energy': 10}
         # Without token
         response = self.client.post(reverse('ingredients-list'), ingr_data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        # Without token
+        # With token
         response = self.client.post(reverse('ingredients-list'), ingr_data, **header)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

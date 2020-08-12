@@ -8,7 +8,7 @@ class RestaurantPermission(BasePermission):
             request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
-        if request.method in ['PUT', 'PATCH', 'DELETE']:
+        if request.method not in SAFE_METHODS:
             return request.user == obj.owner
         return bool(
             request.method in SAFE_METHODS or
