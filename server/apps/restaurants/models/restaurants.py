@@ -17,7 +17,7 @@ class Point(models.Model):
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=64, help_text='Название заведения')
-    photo = models.ImageField(upload_to='uploads/', null=True, help_text='Фотография заведения')
+    photo = models.ImageField(null=True, help_text='Фотография заведения')
     opening_time = models.TimeField(null=True, help_text='Время открытия заведения')
     closing_time = models.TimeField(null=True, help_text='Время закрытия заведения')
     address = models.CharField(max_length=128, null=True, help_text='Адрес заведения')

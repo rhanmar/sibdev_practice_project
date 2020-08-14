@@ -166,4 +166,4 @@ REST_FRAMEWORK = {
 if DEBUG:
     del REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES']
 
-CACHES = {'default': django_cache_url.parse(os.environ.get('REDIS_URL'))}
+CACHES = {'default': django_cache_url.config()}
