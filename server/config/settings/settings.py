@@ -1,6 +1,7 @@
 import os
 
 import dj_database_url
+import django_cache_url
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -164,3 +165,5 @@ REST_FRAMEWORK = {
 
 if DEBUG:
     del REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES']
+
+CACHES = {'default': django_cache_url.config()}
